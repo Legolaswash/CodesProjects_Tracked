@@ -1,0 +1,33 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pytest cache
+.pytest_cache/
+
+# Python virtual environment
+venv/
+env/
+.env/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+.Rhistory
+
+# List of folder : 
+# OK - POO Fourmiliere
+# Projet_HTMLT_JVS_PHP (not workable)
+# Projet RWC scrapping
+# SAE Prévision données temporelles (Almost Done)
+# OK - SkiTout R Shiny (Done)
+# SparkBenchmark (Almost Done)
+NotReady/
