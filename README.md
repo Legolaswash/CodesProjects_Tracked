@@ -51,4 +51,4 @@ Ce répertoire contient plusieurs projets réalisés dans le cadre universitaire
 
 ---
 
-Vous trouverez plus d'information dans les dossier de chacun des projets. 
+Vous trouverez plus d'informations dans les dossiers de chacun des projets. 
