@@ -190,8 +190,8 @@ Cette architecture modulaire facilite la maintenance et le développement de l'a
 
 ## Auteurs
 - Dorian Relave
-- Ian Peysson
-- Romain Troillard
+- Ian Peysson | [merlendo](https://github.com/merlendo)
+- Romain Troillard | [MrPaquiteau](https://github.com/MrPaquiteau)
 - Valentin Berger
 
 <!-- ([GitHub](https://github.com/xxxxxxxxxx)) -->
