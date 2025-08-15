@@ -3,9 +3,15 @@ import time
 import random
 import pandas as pd
 from tqdm import tqdm
+import matplotlib
 import matplotlib.pyplot as plt
 from datetime import timedelta
 
+# For inline graphs in interactive window execution
+# %matplotlib inline
+
+# For popups graph when execution in terminal
+# matplotlib.use('Qt5Agg') # 'Qt5Agg', 'TkAgg'
 
 # Définition de la classe Fourmi, une fourmi = un individu seul.
 class Fourmi:
@@ -361,7 +367,7 @@ def simulation(nb_annee_sim, fourmiliere, affichage):
         pandas.DataFrame: Historique complet de la simulation
     """
     tdem = time.time()
-    
+
     if affichage:
         print("\n===== AVANT SIMULATION =====")
         print(f"Ressources STOCK: {fourmiliere.get_ressources_stock()}")
@@ -487,7 +493,32 @@ def get_user_input():
     # liste_parametre = get_user_input()
     # print(liste_parametre)
 
+def is_notebook():
+    """
+    Retourne True si le code est exécuté dans un notebook (notebook / VSCode interactive).
+    """
+    try:
+        from IPython import get_ipython
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':  # notebook / VSCode interactive
+            return True
+        elif shell == 'TerminalInteractiveShell':  # IPython en terminal
+            return False
+        else:
+            return False  # Autres shells IPython
+    except (NameError, ImportError):
+        return False  # Pas d'IPython
+
 if __name__ == "__main__":
+
+    # Configuration matplotlib
+    if is_notebook():
+        # Inline: notebook / VSCode Interactive
+        from IPython import get_ipython
+        get_ipython().run_line_magic('matplotlib', 'inline')
+    else: # Popup
+        matplotlib.use('Qt5Agg')  # ou 'TkAgg'
+
     # Demander à l'utilisateur s'il souhaite utiliser les paramètres par défaut ou les définir manuellement
     use_default = input("Voulez-vous utiliser les paramètres par défaut ? (o/n) : ").strip().lower()
 
