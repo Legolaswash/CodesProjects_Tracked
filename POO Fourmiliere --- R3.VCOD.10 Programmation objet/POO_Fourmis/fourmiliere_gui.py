@@ -260,7 +260,7 @@ class FourmiSimulatorGUI:
         self.create_plot_tabs()
         
     def create_plot_tabs(self):
-        """Crée les onglets pour les différents graphiiques."""
+        """Crée les onglets pour les différents graphiques."""
         # Graphique population
         self.pop_frame = ttkb.Frame(self.plot_notebook)
         self.plot_notebook.add(self.pop_frame, text="Population")
@@ -276,14 +276,18 @@ class FourmiSimulatorGUI:
         # Graphique naissances
         self.birth_frame = ttkb.Frame(self.plot_notebook)
         self.plot_notebook.add(self.birth_frame, text="Naissances")
+        
+        # Onglet pour afficher tous les graphiques
+        self.all_plots_frame = ttkb.Frame(self.plot_notebook)
+        self.plot_notebook.add(self.all_plots_frame, text="Tous les Graphiques")
     
     def load_stable_config(self):
         """Charge la configuration stable."""
         self.nb_fourmis_var.set(500)
         self.res_nature_var.set(10000)
-        self.prop_garde_var.set(0.25)
-        self.prop_recolteuse_var.set(0.40)
-        self.prop_puericultrice_var.set(0.25)
+        self.prop_garde_var.set(0.275)
+        self.prop_recolteuse_var.set(0.45)
+        self.prop_puericultrice_var.set(0.275)
         self.facteur_attaques_var.set(3.0)
         self.cap_fourmis_var.set(6000)
         self.cap_res_nature_var.set(100000)
@@ -474,6 +478,9 @@ class FourmiSimulatorGUI:
             # Graphique naissances
             self.create_births_plot()
             
+            # Graphique tous les graphiques
+            self.create_all_plots_tab()
+            
             messagebox.showinfo("Mise à jour", "Graphiques mis à jour avec succès!")
             
         except Exception as e:
@@ -554,7 +561,7 @@ class FourmiSimulatorGUI:
         ax.plot(self.df_results.index, self.df_results["Nb_Attaquants"], 
                 label="Nombre d'attaquants", color='red', marker='o', alpha=0.7)
         ax.plot(self.df_results.index, self.df_results["Nb_morts_attaques"], 
-                label="Morts par attaques", color='darkred', marker='s', alpha=0.7)
+                label="Morts par attaques", color='black', marker='s', alpha=0.7)
         
         ax.set_xlabel("Période")
         ax.set_ylabel("Nombre")
@@ -600,6 +607,45 @@ class FourmiSimulatorGUI:
         fig.tight_layout()
         
         canvas = FigureCanvasTkAgg(fig, self.birth_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
+        
+    def create_all_plots_tab(self):
+        """Affiche tous les graphiques dans une grille 2x2."""
+        for widget in self.all_plots_frame.winfo_children():
+            widget.destroy()
+        
+        fig, axs = plt.subplots(2, 2, figsize=(12, 10), dpi=80)
+        fig.tight_layout(pad=5.0)
+        
+        # Population plot
+        axs[0, 0].plot(self.df_results.index, self.df_results["Nb_Fourmis"], label="Total Fourmis", color='blue')
+        axs[0, 0].set_title("Évolution de la population")
+        axs[0, 0].legend()
+        axs[0, 0].grid(True, alpha=0.3)
+        
+        # Resources plot
+        axs[0, 1].plot(self.df_results.index, self.df_results["Res_Stock"], label="Ressources Stock", color='blue')
+        axs[0, 1].plot(self.df_results.index, self.df_results["Res_Nature"], label="Ressources Nature", color='green')
+        axs[0, 1].set_title("Évolution des ressources")
+        axs[0, 1].legend()
+        axs[0, 1].grid(True, alpha=0.3)
+        
+        # Attacks plot
+        axs[1, 0].plot(self.df_results.index, self.df_results["Nb_Attaquants"], label="Nombre d'attaquants", color='red')
+        axs[1, 0].set_title("Évolution des attaques")
+        axs[1, 0].legend()
+        axs[1, 0].grid(True, alpha=0.3)
+        
+        # Births plot
+        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Gardes"], label="Nouveaux Gardes", color='red')
+        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Recolteuses"], label="Nouvelles Récolteuses", color='green')
+        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Puericultrices"], label="Nouvelles Puéricultrices", color='orange')
+        axs[1, 1].set_title("Naissances par saison")
+        axs[1, 1].legend()
+        axs[1, 1].grid(True, alpha=0.3)
+        
+        canvas = FigureCanvasTkAgg(fig, self.all_plots_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=BOTH, expand=True)
         
