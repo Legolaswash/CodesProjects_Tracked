@@ -17,33 +17,31 @@ class FourmiSimulatorGUI:
         self.root = root
         self.root.title("Simulateur de Fourmilière")
         self.root.geometry("1200x800")
-        
-        # Style bootstrap
         self.style = ttkb.Style("superhero")
         
-        # Variables pour la simulation
+        # Variables de simulation
         self.fourmiliere = None
         self.simulation_running = False
         self.simulation_thread = None
         self.df_results = None
         
-        # Variables tkinter pour les paramètres
+        # Définition des paramètres
         self.setup_variables()
         
         # Interface utilisateur
         self.setup_ui()
         
     def setup_variables(self):
-        """Initialise les variables tkinter pour les paramètres."""
-        # Paramètres initiaux
+        """Initialisation des paramètres."""
+        # Quantités initiales
         self.nb_fourmis_var = tk.IntVar(value=500)
         self.res_nature_var = tk.IntVar(value=10000)
         self.nb_annees_var = tk.IntVar(value=50)
         
         # Proportions
-        self.prop_garde_var = tk.DoubleVar(value=0.25)
-        self.prop_recolteuse_var = tk.DoubleVar(value=0.40)
-        self.prop_puericultrice_var = tk.DoubleVar(value=0.25)
+        self.prop_garde_var = tk.DoubleVar(value=0.275)
+        self.prop_recolteuse_var = tk.DoubleVar(value=0.45)
+        self.prop_puericultrice_var = tk.DoubleVar(value=0.275)
         
         # Capacités
         self.cap_fourmis_var = tk.IntVar(value=6000)
@@ -57,13 +55,17 @@ class FourmiSimulatorGUI:
         self.progress_var = tk.DoubleVar()
         self.status_var = tk.StringVar(value="Prêt à simuler")
         
-        # Attach trace callbacks for dynamic adjustment
+        # Ajustement dynamique des proportions
         self.prop_garde_var.trace_add("write", self.adjust_proportions)
         self.prop_recolteuse_var.trace_add("write", self.adjust_proportions)
         self.prop_puericultrice_var.trace_add("write", self.adjust_proportions)
 
     def adjust_proportions(self, *args):
         """Ajuste dynamiquement les proportions pour que leur somme reste égale à 1."""
+        # Si on charge une configuration, on skip l'ajustement automatique
+        if getattr(self, 'loading_config', False):
+            return
+        
         total = (self.prop_garde_var.get() + 
                  self.prop_recolteuse_var.get() + 
                  self.prop_puericultrice_var.get())
@@ -82,12 +84,12 @@ class FourmiSimulatorGUI:
         self.prop_puericultrice_var.set(round(self.prop_puericultrice_var.get() * factor, 3))
 
     def setup_ui(self):
-        """Configure l'interface utilisateur."""
-        # Frame principal avec notebook
+        """Config interface utilisateur."""
+        # Frame principal
         main_frame = ttkb.Frame(self.root)
         main_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
         
-        # Notebook pour les onglets
+        # Onglets via Notebook
         notebook = ttkb.Notebook(main_frame)
         notebook.pack(fill=BOTH, expand=True)
         
@@ -107,7 +109,7 @@ class FourmiSimulatorGUI:
         self.setup_results_tab(results_frame)
         
     def setup_config_tab(self, parent):
-        """Configure l'onglet de paramétrage."""
+        """Config onglet de paramétrage."""
         # Frame de défilement
         canvas = tk.Canvas(parent)
         scrollbar = ttkb.Scrollbar(parent, orient="vertical", command=canvas.yview)
@@ -125,25 +127,25 @@ class FourmiSimulatorGUI:
         initial_group = ttkb.LabelFrame(scrollable_frame, text="Paramètres initiaux", bootstyle="primary")
         initial_group.pack(fill=X, padx=10, pady=5)
         
-        self.create_param_row(initial_group, "Nombre de fourmis initial:", self.nb_fourmis_var, 0, 10000)
+        self.create_param_row(initial_group, "Nombre de fourmis initial:", self.nb_fourmis_var, 1, 10000)
         self.create_param_row(initial_group, "Ressources nature initiales:", self.res_nature_var, 1000, 50000)
-        self.create_param_row(initial_group, "Nombre d'années:", self.nb_annees_var, 10, 200)
+        self.create_param_row(initial_group, "Nombre d'années:", self.nb_annees_var, 1, 200)
         
         # Proportions
         prop_group = ttkb.LabelFrame(scrollable_frame, text="Proportions des rôles", bootstyle="success")
         prop_group.pack(fill=X, padx=10, pady=5)
         
-        self.create_param_row(prop_group, "Proportion de gardes:", self.prop_garde_var, 0.1, 0.5, is_float=True)
-        self.create_param_row(prop_group, "Proportion de récolteuses:", self.prop_recolteuse_var, 0.1, 0.6, is_float=True)
-        self.create_param_row(prop_group, "Proportion de puéricultrices:", self.prop_puericultrice_var, 0.1, 0.5, is_float=True)
-        
+        self.create_param_row(prop_group, "Proportion de gardes:", self.prop_garde_var, 0, 1, is_float=True)
+        self.create_param_row(prop_group, "Proportion de récolteuses:", self.prop_recolteuse_var, 0, 1, is_float=True)
+        self.create_param_row(prop_group, "Proportion de puéricultrices:", self.prop_puericultrice_var, 0, 1, is_float=True)
+
         # Capacités
         cap_group = ttkb.LabelFrame(scrollable_frame, text="Capacités maximales", bootstyle="info")
         cap_group.pack(fill=X, padx=10, pady=5)
         
-        self.create_param_row(cap_group, "Capacité max fourmis:", self.cap_fourmis_var, 1000, 20000)
-        self.create_param_row(cap_group, "Capacité max ressources nature:", self.cap_res_nature_var, 10000, 200000)
-        self.create_param_row(cap_group, "Capacité max stock:", self.cap_res_stock_var, 10000, 200000)
+        self.create_param_row(cap_group, "Capacité max fourmis:", self.cap_fourmis_var, 1, 200000)
+        self.create_param_row(cap_group, "Capacité max ressources nature:", self.cap_res_nature_var, 1000, 200000)
+        self.create_param_row(cap_group, "Capacité max stock:", self.cap_res_stock_var, 1000, 200000)
         
         # Autres paramètres
         other_group = ttkb.LabelFrame(scrollable_frame, text="Autres paramètres", bootstyle="secondary")
@@ -256,7 +258,7 @@ class FourmiSimulatorGUI:
         self.plot_notebook = ttkb.Notebook(parent)
         self.plot_notebook.pack(fill=BOTH, expand=True, padx=10, pady=5)
         
-        # Créer les onglets pour chaque type de graphique
+        # Création d'onglets pour chaque type de graphique
         self.create_plot_tabs()
         
     def create_plot_tabs(self):
@@ -283,6 +285,8 @@ class FourmiSimulatorGUI:
     
     def load_stable_config(self):
         """Charge la configuration stable."""
+        self.loading_config = True  # Désactive l'ajustement automatique
+
         self.nb_fourmis_var.set(500)
         self.res_nature_var.set(10000)
         self.prop_garde_var.set(0.275)
@@ -293,8 +297,12 @@ class FourmiSimulatorGUI:
         self.cap_res_nature_var.set(100000)
         self.cap_res_stock_var.set(60000)
         
+        self.loading_config = False  # Réactive
+        
     def load_unstable_config(self):
         """Charge la configuration instable."""
+        self.loading_config = True  # Désactive l'ajustement automatique
+
         self.nb_fourmis_var.set(400)
         self.res_nature_var.set(30000)
         self.prop_garde_var.set(0.20)
@@ -304,6 +312,8 @@ class FourmiSimulatorGUI:
         self.cap_fourmis_var.set(6000)
         self.cap_res_nature_var.set(100000)
         self.cap_res_stock_var.set(60000)
+
+        self.loading_config = False  # Réactive
         
     def reset_config(self):
         """Remet les valeurs par défaut."""
@@ -412,7 +422,7 @@ class FourmiSimulatorGUI:
                     self.progress_var.set(progress)
                     self.status_var.set(f"Année {annee} - {saison.title()} ({current_season}/{total_seasons})")
                     
-                    # Log des informations importantes
+                    # Log de l'avancement de la simulation
                     if current_season % 4 == 0:  # Chaque année
                         self.log_info(f"Année {annee} terminée - Population: {self.fourmiliere.get_nombre_fourmis()}")
                     
@@ -486,13 +496,15 @@ class FourmiSimulatorGUI:
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur lors de la mise à jour des graphiques:\n{str(e)}")
             
-    def create_population_plot(self):
+    def create_population_plot(self, fig=None, ax=None, parent_frame=None, compact=False):
         """Crée le graphique d'évolution de la population."""
-        fig = Figure(figsize=(12, 6), dpi=80)
-        ax = fig.add_subplot(111)
+        if fig is None:
+            fig = Figure(figsize=(12, 6), dpi=80)
+            ax = fig.add_subplot(111)
+            parent_frame = self.pop_frame
         
         # Calcul du pas pour l'affichage des étiquettes
-        max_ticks = 20
+        max_ticks = 15 if compact else 20
         step = max(1, len(self.df_results) // max_ticks)
         
         ax.plot(self.df_results.index, self.df_results["Nb_Fourmis"], 
@@ -507,26 +519,29 @@ class FourmiSimulatorGUI:
         ax.set_xlabel("Période")
         ax.set_ylabel("Nombre de fourmis")
         ax.set_title("Évolution de la population")
-        ax.legend()
+        ax.legend(fontsize=8 if compact else None)
         ax.grid(True, alpha=0.3)
         
         # Configuration des étiquettes x
         ax.set_xticks(range(0, len(self.df_results), step))
         ax.set_xticklabels([self.df_results.iloc[i]["Period"] for i in range(0, len(self.df_results), step)], 
-                          rotation=45, ha='right')
+                          rotation=45, ha='right', fontsize=8 if compact else None)
         
-        fig.tight_layout()
+        # Si c'est un graphique standalone, créer le canvas
+        if parent_frame is not None:
+            fig.tight_layout()
+            canvas = FigureCanvasTkAgg(fig, parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=BOTH, expand=True)
         
-        canvas = FigureCanvasTkAgg(fig, self.pop_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
-        
-    def create_resources_plot(self):
+    def create_resources_plot(self, fig=None, ax=None, parent_frame=None, compact=False):
         """Crée le graphique d'évolution des ressources."""
-        fig = Figure(figsize=(12, 6), dpi=80)
-        ax = fig.add_subplot(111)
+        if fig is None:
+            fig = Figure(figsize=(12, 6), dpi=80)
+            ax = fig.add_subplot(111)
+            parent_frame = self.res_frame
         
-        max_ticks = 20
+        max_ticks = 15 if compact else 20
         step = max(1, len(self.df_results) // max_ticks)
         
         ax.plot(self.df_results.index, self.df_results["Res_Stock"], 
@@ -537,114 +552,113 @@ class FourmiSimulatorGUI:
         ax.set_xlabel("Période")
         ax.set_ylabel("Quantité de ressources")
         ax.set_title("Évolution des ressources")
-        ax.legend()
+        ax.legend(fontsize=8 if compact else None)
         ax.grid(True, alpha=0.3)
         
         ax.set_xticks(range(0, len(self.df_results), step))
         ax.set_xticklabels([self.df_results.iloc[i]["Period"] for i in range(0, len(self.df_results), step)], 
-                          rotation=45, ha='right')
+                          rotation=45, ha='right', fontsize=8 if compact else None)
         
-        fig.tight_layout()
+        # Si c'est un graphique standalone, créer le canvas
+        if parent_frame is not None:
+            fig.tight_layout()
+            canvas = FigureCanvasTkAgg(fig, parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=BOTH, expand=True)
         
-        canvas = FigureCanvasTkAgg(fig, self.res_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
-        
-    def create_attacks_plot(self):
+    def create_attacks_plot(self, fig=None, ax=None, parent_frame=None, compact=False):
         """Crée le graphique des attaques."""
-        fig = Figure(figsize=(12, 6), dpi=80)
-        ax = fig.add_subplot(111)
+        if fig is None:
+            fig = Figure(figsize=(12, 6), dpi=80)
+            ax = fig.add_subplot(111)
+            parent_frame = self.att_frame
         
-        max_ticks = 20
+        max_ticks = 15 if compact else 20
         step = max(1, len(self.df_results) // max_ticks)
+        marker_size = 3 if compact else 6
         
         ax.plot(self.df_results.index, self.df_results["Nb_Attaquants"], 
-                label="Nombre d'attaquants", color='red', marker='o', alpha=0.7)
+                label="Nombre d'attaquants", color='red', marker='o', alpha=0.7, markersize=marker_size)
         ax.plot(self.df_results.index, self.df_results["Nb_morts_attaques"], 
-                label="Morts par attaques", color='black', marker='s', alpha=0.7)
+                label="Morts par attaques", color='black', marker='s', alpha=0.7, markersize=marker_size)
         
         ax.set_xlabel("Période")
         ax.set_ylabel("Nombre")
         ax.set_title("Évolution des attaques et pertes")
-        ax.legend()
+        ax.legend(fontsize=8 if compact else None)
         ax.grid(True, alpha=0.3)
         
         ax.set_xticks(range(0, len(self.df_results), step))
         ax.set_xticklabels([self.df_results.iloc[i]["Period"] for i in range(0, len(self.df_results), step)], 
-                          rotation=45, ha='right')
+                          rotation=45, ha='right', fontsize=8 if compact else None)
         
-        fig.tight_layout()
+        # Si c'est un graphique standalone, créer le canvas
+        if parent_frame is not None:
+            fig.tight_layout()
+            canvas = FigureCanvasTkAgg(fig, parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=BOTH, expand=True)
         
-        canvas = FigureCanvasTkAgg(fig, self.att_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
-        
-    def create_births_plot(self):
+    def create_births_plot(self, fig=None, ax=None, parent_frame=None, compact=False):
         """Crée le graphique des naissances."""
-        fig = Figure(figsize=(12, 6), dpi=80)
-        ax = fig.add_subplot(111)
+        if fig is None:
+            fig = Figure(figsize=(12, 6), dpi=80)
+            ax = fig.add_subplot(111)
+            parent_frame = self.birth_frame
         
-        max_ticks = 20
+        max_ticks = 15 if compact else 20
         step = max(1, len(self.df_results) // max_ticks)
+        marker_size = 3 if compact else 6
         
         ax.plot(self.df_results.index, self.df_results["Nb_New_Gardes"], 
-                label="Nouveaux Gardes", color='red', alpha=0.7, marker='o')
+                label="Nouveaux Gardes", color='red', alpha=0.7, marker='o', markersize=marker_size)
         ax.plot(self.df_results.index, self.df_results["Nb_New_Recolteuses"], 
-                label="Nouvelles Récolteuses", color='green', alpha=0.7, marker='s')
+                label="Nouvelles Récolteuses", color='green', alpha=0.7, marker='s', markersize=marker_size)
         ax.plot(self.df_results.index, self.df_results["Nb_New_Puericultrices"], 
-                label="Nouvelles Puéricultrices", color='orange', alpha=0.7, marker='^')
+                label="Nouvelles Puéricultrices", color='orange', alpha=0.7, marker='^', markersize=marker_size)
         
         ax.set_xlabel("Période")
         ax.set_ylabel("Nombre de naissances")
         ax.set_title("Naissances par saison et par rôle")
-        ax.legend()
+        ax.legend(fontsize=8 if compact else None)
         ax.grid(True, alpha=0.3)
         
         ax.set_xticks(range(0, len(self.df_results), step))
         ax.set_xticklabels([self.df_results.iloc[i]["Period"] for i in range(0, len(self.df_results), step)], 
-                          rotation=45, ha='right')
+                          rotation=45, ha='right', fontsize=8 if compact else None)
         
-        fig.tight_layout()
-        
-        canvas = FigureCanvasTkAgg(fig, self.birth_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=True)
+        # Si c'est un graphique standalone, créer le canvas
+        if parent_frame is not None:
+            fig.tight_layout()
+            canvas = FigureCanvasTkAgg(fig, parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=BOTH, expand=True)
         
     def create_all_plots_tab(self):
-        """Affiche tous les graphiques dans une grille 2x2."""
+        """Affiche tous les graphiques dans une grille 2x2 en réutilisant les fonctions modulaires."""
         for widget in self.all_plots_frame.winfo_children():
             widget.destroy()
         
-        fig, axs = plt.subplots(2, 2, figsize=(12, 10), dpi=80)
-        fig.tight_layout(pad=5.0)
+        # Création de la figure principale avec sous-graphiques
+        fig = Figure(figsize=(16, 12), dpi=80)
+        fig.suptitle("Vue d'ensemble - Tous les graphiques", fontsize=16, fontweight='bold')
         
-        # Population plot
-        axs[0, 0].plot(self.df_results.index, self.df_results["Nb_Fourmis"], label="Total Fourmis", color='blue')
-        axs[0, 0].set_title("Évolution de la population")
-        axs[0, 0].legend()
-        axs[0, 0].grid(True, alpha=0.3)
+        # Création des sous-graphiques
+        ax1 = fig.add_subplot(2, 2, 1)  # Population (haut gauche)
+        ax2 = fig.add_subplot(2, 2, 2)  # Ressources (haut droite)
+        ax3 = fig.add_subplot(2, 2, 3)  # Attaques (bas gauche)
+        ax4 = fig.add_subplot(2, 2, 4)  # Naissances (bas droite)
+
+        # Réutilisation des fonctions existantes avec les paramètres pour mode compact
+        self.create_population_plot(fig=fig, ax=ax1, parent_frame=None, compact=True)
+        self.create_resources_plot(fig=fig, ax=ax2, parent_frame=None, compact=True)
+        self.create_attacks_plot(fig=fig, ax=ax3, parent_frame=None, compact=True)
+        self.create_births_plot(fig=fig, ax=ax4, parent_frame=None, compact=True)
         
-        # Resources plot
-        axs[0, 1].plot(self.df_results.index, self.df_results["Res_Stock"], label="Ressources Stock", color='blue')
-        axs[0, 1].plot(self.df_results.index, self.df_results["Res_Nature"], label="Ressources Nature", color='green')
-        axs[0, 1].set_title("Évolution des ressources")
-        axs[0, 1].legend()
-        axs[0, 1].grid(True, alpha=0.3)
+        # Ajustement de la mise en page
+        fig.tight_layout(pad=3.0)
         
-        # Attacks plot
-        axs[1, 0].plot(self.df_results.index, self.df_results["Nb_Attaquants"], label="Nombre d'attaquants", color='red')
-        axs[1, 0].set_title("Évolution des attaques")
-        axs[1, 0].legend()
-        axs[1, 0].grid(True, alpha=0.3)
-        
-        # Births plot
-        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Gardes"], label="Nouveaux Gardes", color='red')
-        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Recolteuses"], label="Nouvelles Récolteuses", color='green')
-        axs[1, 1].plot(self.df_results.index, self.df_results["Nb_New_Puericultrices"], label="Nouvelles Puéricultrices", color='orange')
-        axs[1, 1].set_title("Naissances par saison")
-        axs[1, 1].legend()
-        axs[1, 1].grid(True, alpha=0.3)
-        
+        # Création du canvas pour affichage
         canvas = FigureCanvasTkAgg(fig, self.all_plots_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=BOTH, expand=True)
